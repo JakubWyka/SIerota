@@ -9,7 +9,7 @@ class NerualLayer():
         self._memory = None
         self._prev = prev
         self._next = None
-        self._activation = ReLu()
+        self._activation = ReLu(a=0.01) #LeakyReLu
 
     def feed_forward(self, input):
         output = self._activation(np.dot(input, self._weights))
