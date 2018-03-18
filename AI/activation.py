@@ -17,11 +17,14 @@ class ActivationFunction(ABC):
         pass
 
 class Linear(ActivationFunction):
+    def __init__(self, a = 1):
+        self._a = a
+
     def derivative(self, x):
-        return np.ones_like(x)
+        return self._a * np.ones_like(x)
     
     def _function(self, x):
-        return x
+        return self._a * x
         
 class ReLu(ActivationFunction):
     def __init__(self, a = 0):
@@ -29,7 +32,7 @@ class ReLu(ActivationFunction):
     
     def derivative(self, x):
         x = 1. * (x > 0)
-        x = self._a * (x == 1.)
+        x = self._a * (x != 1.)
         return x
     
     def _function(self, x):
