@@ -1,4 +1,4 @@
-from nerualnet import NerualNet
+from . import nerualnet as nn
 
 class AI():
     def __init__(self):
