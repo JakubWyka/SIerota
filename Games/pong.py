@@ -1,6 +1,6 @@
-from . import game
+from .game import Game
 
-class Pong(game.Game):
+class Pong(Game):
     def __init__(self, duration):
         super(Pong, self).__init__(duration)
     

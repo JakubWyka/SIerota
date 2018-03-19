@@ -1,16 +1,16 @@
-from . import activation
+from .activation import ReLu
 import numpy as np
 
-class NerualLayer():
+class NeuralLayer():
     def __init__(self, inputs, outputs, prev=None):
-        np.random.seed(1024)
+        np.random.seed(1)
         self._weights = 2* np.random.random((inputs, outputs)) - 1
         if prev is not None:
             prev._next = self
         self._memory = None
         self._prev = prev
         self._next = None
-        self._activation = activation.ReLu(a=0.01) #LeakyReLu
+        self._activation = ReLu(a=0.01) #LeakyReLu
 
     def feed_forward(self, input):
         output = self._activation(np.dot(input, self._weights))

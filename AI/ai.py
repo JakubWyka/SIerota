@@ -1,4 +1,4 @@
-from . import nerualnet as nn
+from .neuralnet import NeuralNet
 
 class AI():
     def __init__(self):
