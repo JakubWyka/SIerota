@@ -15,6 +15,10 @@ def clamp(x, minimum,maximum):
 class Pong(Game):
     PADDLE_SPEED = 300
     BALL_SPEED = 200.0
+    NO_REWARD = 0
+    TIME_REWARD = 2
+    PONG_REWARD = 4 #given with time_reward
+    SCORE_REWARD = 10
 
     def __init__(self, key_bindings, max_score):
         super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI")
@@ -50,31 +54,33 @@ class Pong(Game):
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     self._done = True
+
         if self._player.score == self._max_score or self._bot.score == self._max_score:
             self._done = True
+            
         restart = False
+        reward = Pong.TIME_REWARD
         for _ in range(10):
             self._ball.update(self._dt/10)
-
             if self._ball.pos['x'] < 0:
                 self._bot.add_score()
+                reward = Pong.SCORE_REWARD
                 restart = True
-                break
             elif self._ball.pos['x'] > self._screen_size[0]:
                 self._player.add_score()
                 restart = True
-                break
-            
+                reward = Pong.NO_REWARD
+
             if self._ball.pos['y'] < 0 or self._ball.pos['y'] > self._screen_size[1]:
                 self._ball.pos['y'] = clamp(self._ball.pos['y'], 0, self._screen_size[1])
                 self._ball.speed['y'] *= -1
 
-            self._bot.collide(self._ball)
-            self._player.collide(self._ball)
-            
-        if restart:
-            self._ball = Pong.Ball(self._screen_size[0] / 2,self._screen_size[1] / 2, Pong.BALL_SPEED)        
-        return 
+            if restart:
+                self._ball = Pong.Ball(self._screen_size[0] / 2,self._screen_size[1] / 2, Pong.BALL_SPEED)        
+            else:
+                reward += self._bot.collide(self._ball)
+                self._player.collide(self._ball)
+        return reward
 
     def draw(self):
         self.surface.fill((0,0,0))
@@ -91,12 +97,12 @@ class Pong(Game):
         pygame.display.flip()
 
     def execute(self, action):
-        self.update()
         keys = pygame.key.get_pressed()        
         self._player.update(self._dt, keys = keys)
         self._bot.update(self._dt, key = self._key_bindings[action])
-        self._ball.update(self._dt)
-        return self.state
+        self._ball.update(self._dt) 
+        reward = self.update()
+        return self.state, reward, self.done
 
     class Paddle:
         def __init__(self, x, y, w, h, key_d, key_u):
@@ -121,14 +127,16 @@ class Pong(Game):
                 self.move(Pong.PADDLE_SPEED, dt)
 
         def collide(self, ball):
-             if ball.pos['x'] > self._pos['x'] and ball.pos['x'] < self._pos['x'] + self._dim['width'] and\
-                   ball.pos['y'] > self._pos['y'] and ball.pos['y'] < self._pos['y'] + self._dim['height']:
+            reward = Pong.NO_REWARD
+            if ball.pos['x'] > self._pos['x'] and ball.pos['x'] < self._pos['x'] + self._dim['width'] and\
+                    ball.pos['y'] > self._pos['y'] and ball.pos['y'] < self._pos['y'] + self._dim['height']:
                     dist_lrdu = [
                         ball.pos['x'] - self._pos['x'],
                         (self._pos['x'] + self._dim['width']) - ball.pos['x'],
                         (self._pos['y'] + self._dim['height']) - ball.pos['y'],
                         ball.pos['y'] - self._pos['y'],
                     ]
+                    reward = Pong.PONG_REWARD
                     dist_min = min(dist_lrdu)
                     if   dist_min == dist_lrdu[0]: 
                         ball.speed['x'] = -abs(ball.speed['x'])
@@ -138,6 +146,7 @@ class Pong(Game):
                         ball.speed['y'] =  abs(ball.speed['y'])
                     elif dist_min == dist_lrdu[3]: 
                         ball.speed['y'] = -abs(ball.speed['y'])
+            return reward
 
         def draw(self, color):
             pygame.draw.rect(Pong._surface, color, (self._pos['x'], self._pos['y'], self._dim['width'], self._dim['height']), 0)
@@ -166,7 +175,7 @@ class Pong(Game):
                 self._paddle.update_with_keys(keys, dt)
         
         def collide(self, ball):
-            self._paddle.collide(ball)
+            return self._paddle.collide(ball)
 
     class Ball:
         def __init__(self, x,y, speed):
