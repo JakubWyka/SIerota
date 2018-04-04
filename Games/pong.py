@@ -6,40 +6,46 @@ import random
 import math
 from .game import Game
 
+
 def rndint(x):
     return int(round(x))
 
-def clamp(x, minimum,maximum):
+
+def clamp(x, minimum, maximum):
     if x < minimum: return minimum
     if x > maximum: return maximum
     return x
+
+
 class Pong(Game):
     PADDLE_SPEED = 300
     BALL_SPEED = 200.0
     NO_REWARD = 0
     TIME_REWARD = 2
-    PONG_REWARD = 4 #given with time_reward
+    PONG_REWARD = 4  # given with time_reward
     SCORE_REWARD = 10
     OUTPUT_SHAPE = (1, 5)
 
     def __init__(self, key_bindings, max_score):
         super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI")
-        self._font = pygame.font.SysFont("Times New Roman",18)
+        self._font = pygame.font.SysFont("Times New Roman", 18)
         self._max_score = max_score
         self.start()
-    
+
     def start(self):
-        self._dt = 1.0/60.0
+        self._dt = 1.0 / 60.0
         self._done = False
-        self._ball = Pong.Ball(self._screen_size[0] / 2,self._screen_size[1] / 2, Pong.BALL_SPEED)
-        self._player = Pong.Player((0,255,0), Pong.Paddle(5, self._screen_size[1] / 2 - 30, 10, 100, K_s, K_w))
-        self._bot = Pong.Player((0,0,255), Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN,K_UP))
+        self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
+        self._player = Pong.Player((0, 255, 0), Pong.Paddle(5, self._screen_size[1] / 2 - 30, 10, 100, K_s, K_w))
+        self._bot = Pong.Bot((0, 0, 255),
+                             Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN,
+                                         K_UP))
         self._clock = pygame.time.Clock()
-    
+
     def update_clock(self):
         self._clock.tick(60)
-        self._dt = 1.0/clamp(self._clock.get_fps(),30,90)
-    
+        self._dt = 1.0 / clamp(self._clock.get_fps(), 30, 90)
+
     @property
     def state(self):
         x = self._ball.pos['x'] // (self._screen_size[0] // 4)
@@ -59,11 +65,11 @@ class Pong(Game):
 
         if self._player.score == self._max_score or self._bot.score == self._max_score:
             self._done = True
-            
+
         restart = False
         reward = Pong.TIME_REWARD
         for _ in range(10):
-            self._ball.update(self._dt/10)
+            self._ball.update(self._dt / 10)
             if self._ball.pos['x'] < 0:
                 self._bot.add_score()
                 reward = Pong.SCORE_REWARD
@@ -78,14 +84,14 @@ class Pong(Game):
                 self._ball.speed['y'] *= -1
 
             if restart:
-                self._ball = Pong.Ball(self._screen_size[0] / 2,self._screen_size[1] / 2, Pong.BALL_SPEED)        
+                self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
             else:
                 reward += self._bot.collide(self._ball)
                 self._player.collide(self._ball)
         return reward
 
     def draw(self):
-        self.surface.fill((0,0,0))
+        self.surface.fill((0, 0, 0))
 
         self._ball.draw()
         self._bot.draw()
@@ -94,15 +100,15 @@ class Pong(Game):
         p1_score_text = self._font.render("Score " + str(self._player.score), True, (255, 255, 255))
         p2_score_text = self._font.render("Score " + str(self._bot.score), True, (255, 255, 255))
         self._surface.blit(p1_score_text, (20, 20))
-        self._surface.blit(p2_score_text,(self._screen_size[0] - p2_score_text.get_width() - 20, 20))
+        self._surface.blit(p2_score_text, (self._screen_size[0] - p2_score_text.get_width() - 20, 20))
 
         pygame.display.flip()
 
     def execute(self, action):
-        keys = pygame.key.get_pressed()        
-        self._player.update(self._dt, keys = keys)
-        self._bot.update(self._dt, key = self._key_bindings[action])
-        self._ball.update(self._dt) 
+        keys = pygame.key.get_pressed()
+        self._player.update(self._dt, keys=keys)
+        self._bot.update(self._dt, self._ball.pos['y'])
+        self._ball.update(self._dt)
         reward = self.update()
         return self.state, reward, self.done
 
@@ -114,55 +120,57 @@ class Pong(Game):
             self.key_u = key_u
 
         def move(self, speed, dt):
-            self._pos['y'] = clamp(self._pos['y'] - dt * speed , 0, Pong._screen_size[1] - self._dim['height'])
-        
+            self._pos['y'] = clamp(self._pos['y'] - dt * speed, 0, Pong._screen_size[1] - self._dim['height'])
+
         def update_with_key(self, key, dt):
-            if self.key_d == key: 
+            if self.key_d == key:
                 self.move(-1 * Pong.PADDLE_SPEED, dt)
-            elif self.key_u == key: 
+            elif self.key_u == key:
                 self.move(Pong.PADDLE_SPEED, dt)
-        
+
         def update_with_keys(self, keys, dt):
-            if keys[self.key_d]: 
+            if keys[self.key_d]:
                 self.move(-1 * Pong.PADDLE_SPEED, dt)
-            elif keys[self.key_u]: 
+            elif keys[self.key_u]:
                 self.move(Pong.PADDLE_SPEED, dt)
 
         def collide(self, ball):
             reward = Pong.NO_REWARD
-            if ball.pos['x'] > self._pos['x'] and ball.pos['x'] < self._pos['x'] + self._dim['width'] and\
-                    ball.pos['y'] > self._pos['y'] and ball.pos['y'] < self._pos['y'] + self._dim['height']:
-                    dist_lrdu = [
-                        ball.pos['x'] - self._pos['x'],
-                        (self._pos['x'] + self._dim['width']) - ball.pos['x'],
-                        (self._pos['y'] + self._dim['height']) - ball.pos['y'],
-                        ball.pos['y'] - self._pos['y'],
-                    ]
-                    reward = Pong.PONG_REWARD
-                    dist_min = min(dist_lrdu)
-                    if   dist_min == dist_lrdu[0]: 
-                        ball.speed['x'] = -abs(ball.speed['x'])
-                    elif dist_min == dist_lrdu[1]: 
-                        ball.speed['x'] =  abs(ball.speed['x'])
-                    elif dist_min == dist_lrdu[2]: 
-                        ball.speed['y'] =  abs(ball.speed['y'])
-                    elif dist_min == dist_lrdu[3]: 
-                        ball.speed['y'] = -abs(ball.speed['y'])
+            if ball.pos['x'] > self._pos['x'] and ball.pos['x'] < self._pos['x'] + self._dim['width'] and \
+                            ball.pos['y'] > self._pos['y'] and ball.pos['y'] < self._pos['y'] + self._dim['height']:
+                dist_lrdu = [
+                    ball.pos['x'] - self._pos['x'],
+                    (self._pos['x'] + self._dim['width']) - ball.pos['x'],
+                    (self._pos['y'] + self._dim['height']) - ball.pos['y'],
+                    ball.pos['y'] - self._pos['y'],
+                ]
+                reward = Pong.PONG_REWARD
+                dist_min = min(dist_lrdu)
+                if dist_min == dist_lrdu[0]:
+                    ball.speed['x'] = -abs(ball.speed['x'])
+                elif dist_min == dist_lrdu[1]:
+                    ball.speed['x'] = abs(ball.speed['x'])
+                elif dist_min == dist_lrdu[2]:
+                    ball.speed['y'] = abs(ball.speed['y'])
+                elif dist_min == dist_lrdu[3]:
+                    ball.speed['y'] = -abs(ball.speed['y'])
             return reward
 
         def draw(self, color):
-            pygame.draw.rect(Pong._surface, color, (self._pos['x'], self._pos['y'], self._dim['width'], self._dim['height']), 0)
-            pygame.draw.rect(Pong._surface, (255,255,255), (self._pos['x'], self._pos['y'], self._dim['width'], self._dim['height']), 1)
-    
+            pygame.draw.rect(Pong._surface, color,
+                             (self._pos['x'], self._pos['y'], self._dim['width'], self._dim['height']), 0)
+            pygame.draw.rect(Pong._surface, (255, 255, 255),
+                             (self._pos['x'], self._pos['y'], self._dim['width'], self._dim['height']), 1)
+
     class Player:
-        def __init__(self,color,paddle):
+        def __init__(self, color, paddle):
             self._score = 0
             self._color = color
             self._paddle = paddle
-        
+
         def add_score(self):
             self._score += 1
-        
+
         @property
         def score(self):
             return self._score
@@ -175,28 +183,42 @@ class Pong(Game):
                 self._paddle.update_with_key(key, dt)
             elif keys is not None:
                 self._paddle.update_with_keys(keys, dt)
-        
+
         def collide(self, ball):
             return self._paddle.collide(ball)
 
+    class Bot(Player):
+        COUNT = 0
+        SPEED = 0
+
+        def update(self, dt, poy):
+            if self._paddle._pos['y']>poy:
+                self.SPEED = 1.3
+            else:
+                self.SPEED = -1.3
+            self._paddle.move(self.SPEED * Pong.PADDLE_SPEED, dt)
+            self.COUNT += 1
+
     class Ball:
-        def __init__(self, x,y, speed):
+        def __init__(self, x, y, speed):
             self.pos = {'x': x, 'y': y}
 
             angle = math.pi / 2
             while abs(math.cos(angle)) < 0.2 or abs(math.cos(angle)) > 0.8:
-                angle = math.radians(random.randint(0,360))
-            self.speed = {'x': speed*math.cos(angle), 'y': speed*math.sin(angle)}
+                angle = math.radians(random.randint(0, 360))
+            self.speed = {'x': speed * math.cos(angle), 'y': speed * math.sin(angle)}
 
             self.radius = 4
+
         def update(self, dt):
-            self.pos['x'] += dt*self.speed['x']
-            self.pos['y'] += dt*self.speed['y']         
-        
+            self.pos['x'] += dt * self.speed['x']
+            self.pos['y'] += dt * self.speed['y']
+
         def speed_up(self):
             factor = 1.1
             self.speed['x'] *= factor
             self.speed['y'] *= factor
-        
+
         def draw(self):
-            pygame.draw.circle(Pong._surface, (255,255,255), [rndint(self.pos['x']), rndint(self.pos['y'])] ,self.radius)
+            pygame.draw.circle(Pong._surface, (255, 255, 255), [rndint(self.pos['x']), rndint(self.pos['y'])],
+                               self.radius)
