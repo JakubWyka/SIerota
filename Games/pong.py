@@ -1,5 +1,6 @@
 import pygame
 from pygame.locals import *
+from numpy import reshape
 import sys, traceback
 import random
 import math
@@ -19,6 +20,7 @@ class Pong(Game):
     TIME_REWARD = 2
     PONG_REWARD = 4 #given with time_reward
     SCORE_REWARD = 10
+    OUTPUT_SHAPE = (1, 5)
 
     def __init__(self, key_bindings, max_score):
         super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI")
@@ -45,7 +47,7 @@ class Pong(Game):
         bpos = y * 4 + x + 1
         state = [self._player._paddle._pos['y'], self._bot._paddle._pos['y'],
             bpos, self._ball.speed['x'], self._ball.speed['y']]
-        return state
+        return reshape(state, Pong.OUTPUT_SHAPE)
 
     def update(self):
         for event in pygame.event.get():
