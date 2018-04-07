@@ -35,6 +35,7 @@ class Pong(Game):
     def start(self):
         self._dt = 1.0 / 60.0
         self._done = False
+        self.end=False      #to testing episodes
         self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
         self._player = Pong.Player((0, 255, 0),  Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN,
                                                              K_UP))
@@ -58,6 +59,7 @@ class Pong(Game):
         for event in pygame.event.get():
             if event.type == QUIT:
                 self._done = True
+                self.end=True
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     self._done = True
@@ -85,8 +87,8 @@ class Pong(Game):
             if restart:
                 self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
             else:
-                reward += self._bot.collide(self._ball)
-                self._player.collide(self._ball)
+                reward += self._player.collide(self._ball)
+                self._bot.collide(self._ball)
         return reward
 
     def draw(self):
@@ -109,6 +111,7 @@ class Pong(Game):
         self._bot.update(self._dt, self._ball.pos['y'])
         self._ball.update(self._dt)
         reward = self.update()
+
         return self.state, reward, self.done
 
     class Paddle:
