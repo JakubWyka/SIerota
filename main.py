@@ -8,20 +8,21 @@ from time import time
 
 #testing code
 if __name__ == "__main__":
-    EPISODES = 150
+    EPISODES = 10000
     agent=AI(Pong.OUTPUT_SHAPE[1],2)
     batch_size = 50
-    #agent.load("./save.h5")
-    end_learning = time() + 2*60*60
+    agent.load("./save.h5")
+
+    end_learning = time() + 60*60
 
     for e in range(EPISODES):
         pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 3)
         state = pong.state
-        end = time() + 2 * 60
+        end = time() + 1 * 60
         while not pong.done and time() < end:
             act=agent.getAction(state)
             state_new, reward, done = pong.execute(act) 
-            if reward > 2:
+            if reward == Pong.PONG_REWARD:
                 print(reward)
             pong.draw()
             state = state_new
