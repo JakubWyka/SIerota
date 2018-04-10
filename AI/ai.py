@@ -37,10 +37,12 @@ class AI():
         return nump.argmax(val[0])  
 
     def load(self, name):
-        self.model.load_weights(name)
+        #self.model.load_weights(name)
+        self.model = k.models.load_model(name)
+        self.epsilon = self.epsilon_min
     def save(self, name):
-        self.model.save_weights(name)
-
+        #self.model.save_weights(name)
+        self.model.save(name)
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)

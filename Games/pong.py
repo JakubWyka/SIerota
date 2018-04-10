@@ -21,9 +21,9 @@ class Pong(Game):
     PADDLE_SPEED = 300
     BALL_SPEED = 200.0
     NO_REWARD = 0
-    TIME_REWARD = 2
-    PONG_REWARD = 4  # given with time_reward
-    SCORE_REWARD = 10
+    ENEMY__SCORE_REWARD = -4
+    PONG_REWARD = 2  # given with time_reward
+    SCORE_REWARD = 4
     OUTPUT_SHAPE = (1, 5)
 
     def __init__(self, key_bindings, max_score):
@@ -35,10 +35,9 @@ class Pong(Game):
     def start(self):
         self._dt = 1.0 / 60.0
         self._done = False
-        self.end=False      #to testing episodes
+        self.end = False      #to testing episodes
         self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
-        self._player = Pong.Player((0, 255, 0),  Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN,
-                                                             K_UP))
+        self._player = Pong.Player((0, 255, 0),  Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN, K_UP))
         self._bot = Pong.Bot((0, 0, 255), Pong.Paddle(5, self._screen_size[1] / 2 - 30, 10, 100, K_s, K_w))
         self._clock = pygame.time.Clock()
 
@@ -68,7 +67,7 @@ class Pong(Game):
             self._done = True
 
         restart = False
-        reward = Pong.TIME_REWARD
+        reward = Pong.NO_REWARD
         for _ in range(10):
             self._ball.update(self._dt / 10)
             if self._ball.pos['x'] < 0:
@@ -78,7 +77,7 @@ class Pong(Game):
             elif self._ball.pos['x'] > self._screen_size[0]:
                 self._player.add_score()
                 restart = True
-                reward = Pong.NO_REWARD
+                reward = Pong.ENEMY_SCORE_REWARD
 
             if self._ball.pos['y'] < 0 or self._ball.pos['y'] > self._screen_size[1]:
                 self._ball.pos['y'] = clamp(self._ball.pos['y'], 0, self._screen_size[1])
@@ -87,7 +86,10 @@ class Pong(Game):
             if restart:
                 self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
             else:
-                reward += self._player.collide(self._ball)
+                tmp = self._player.collide(self._ball)
+                if tmp > Pong.NO_REWARD and not given:
+                    given = True
+                    reward = Pong.PONG_REWARD
                 self._bot.collide(self._ball)
         return reward
 
