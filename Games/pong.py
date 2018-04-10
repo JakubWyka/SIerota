@@ -18,8 +18,8 @@ def clamp(x, minimum, maximum):
 
 
 class Pong(Game):
-    PADDLE_SPEED = 300 * 2
-    BALL_SPEED = 200.0 * 2
+    PADDLE_SPEED = 300
+    BALL_SPEED = 200.0
     NO_REWARD = 0
     ENEMY_SCORE_REWARD = -10
     PONG_REWARD = 10  # given with time_reward
@@ -39,7 +39,7 @@ class Pong(Game):
         self.end = False      #to testing episodes
         self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
         self._player = Pong.Player((0, 255, 0),  Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN, K_UP))
-        self._bot = Pong.Bot((0, 0, 255), Pong.Paddle(5, self._screen_size[1] / 2 - 30, 10, 450, K_s, K_w))
+        self._bot = Pong.Bot((0, 0, 255), Pong.Paddle(5, self._screen_size[1] / 2 - 30, 10, 100, K_s, K_w))
         self._clock = pygame.time.Clock()
 
     def update_clock(self):
@@ -112,7 +112,8 @@ class Pong(Game):
 
     def execute(self, action):
         keys = pygame.key.get_pressed()
-        self._player.update(self._dt, key=self._key_bindings[action])
+        #self._player.update(self._dt, key=self._key_bindings[action])
+        self._player.update(self._dt, keys=keys)
         self._bot.update(self._dt, self._ball.pos['y'])
         self._ball.update(self._dt)
         reward = self.update()
@@ -128,9 +129,7 @@ class Pong(Game):
             self.key_u = key_u
 
         def move(self, speed, dt):
-            #oldy = self._pos['y']
             self._pos['y'] = clamp(self._pos['y'] - dt * speed, 0, Pong._screen_size[1] - self._dim['height'])
-            #return self._pos['y'] - oldy
 
         def update_with_key(self, key, dt):
             if self.key_d == key:
@@ -206,7 +205,7 @@ class Pong(Game):
                 self.SPEED = 1.3
             else:
                 self.SPEED = -1.3
-            self._paddle.move(1.5 * self.SPEED * Pong.PADDLE_SPEED, dt)
+            self._paddle.move(self.SPEED * Pong.PADDLE_SPEED, dt)
             self.COUNT += 1
 
     class Ball:
