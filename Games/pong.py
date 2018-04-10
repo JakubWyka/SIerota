@@ -21,7 +21,7 @@ class Pong(Game):
     PADDLE_SPEED = 300
     BALL_SPEED = 200.0
     NO_REWARD = 0
-    ENEMY__SCORE_REWARD = -4
+    ENEMY_SCORE_REWARD = -4
     PONG_REWARD = 2  # given with time_reward
     SCORE_REWARD = 4
     OUTPUT_SHAPE = (1, 5)
