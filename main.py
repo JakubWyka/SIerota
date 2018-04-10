@@ -11,7 +11,7 @@ if __name__ == "__main__":
     EPISODES = 150
     agent=AI(Pong.OUTPUT_SHAPE[1],2)
     batch_size = 50
-    
+    #agent.load("./save.h5")
     end_learning = time() + 2*60*60
 
     for e in range(EPISODES):
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
             print(agent.epsilon)
-        if pong.end==True or time() < end_learning:
+        if pong.end==True or time() >= end_learning:
             break
     agent.save("./save.h5")
     pong.exit_game()

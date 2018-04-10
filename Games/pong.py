@@ -67,6 +67,7 @@ class Pong(Game):
             self._done = True
 
         restart = False
+        given = False
         reward = Pong.NO_REWARD
         for _ in range(10):
             self._ball.update(self._dt / 10)
