@@ -24,7 +24,7 @@ class AI():
         self.model.add(k.layers.Dense(24, activation="relu"))
         self.model.add(k.layers.Dense(self.action_size, activation="linear"))
         self.model.compile(loss="mean_squared_error",
-                            optimizer=k.optimizers.Adam(lr=0.1))
+                            optimizer='rmsprop')
         return self.model
 
     def remember(self, state, my_action):
