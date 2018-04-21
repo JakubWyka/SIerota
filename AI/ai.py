@@ -27,8 +27,8 @@ class AI():
                             optimizer=k.optimizers.Adam(lr=0.1))
         return self.model
 
-    def remember(self, state, action, reward, state_new, isdone):
-        self.memory.append ((state, action, reward, state_new, isdone))
+    def remember(self, state, my_action):
+        self.memory.append((state, my_action))
 
     def getAction(self, state):
         if random.random() <= self.epsilon:
@@ -46,14 +46,7 @@ class AI():
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
-        for state, action, reward, state_new, isdone in minibatch:
-            if not isdone:
-                predVal=nump.amax(self.model.predict(state_new)[0])
-                target = (reward + self.gamma *predVal)
-            else:
-                target = reward
-            target_f = self.model.predict(state)
-            target_f[0][action] = target
-            self.model.fit(state, target_f, epochs=1, verbose=0)
+        for state, my_action in minibatch:
+            self.model.fit(state, my_action, epochs=1, verbose=0)
         if self.epsilon > self.epsilon_min:
             self.epsilon *= self.epsilon_decay

@@ -64,6 +64,7 @@ class Pong(Game):
                 if event.key == K_ESCAPE:
                     self._done = True
 
+
         if self._player.score == self._max_score or self._bot.score == self._max_score:
             self._done = True
 
@@ -109,17 +110,40 @@ class Pong(Game):
         self._surface.blit(p2_score_text, (self._screen_size[0] - p2_score_text.get_width() - 20, 20))
 
         pygame.display.flip()
-
-    def execute(self, action):
+	
+    def execute_ai(self, action):
         keys = pygame.key.get_pressed()
-        #self._player.update(self._dt, key=self._key_bindings[action])
+        self._player.update(self._dt, key=self._key_bindings[action])
+        start = self._player._paddle._pos['y']
         self._player.update(self._dt, keys=keys)
+        end = self._player._paddle._pos['y']
         self._bot.update(self._dt, self._ball.pos['y'])
         self._ball.update(self._dt)
         reward = self.update()
         dy = abs(self._player._paddle._pos['y'] - self._screen_size[1]/2.0)
-        reward += (1 - dy) * Pong.CENTER_REWARD
-        return self.state, reward, self.done
+        if end - start > 0:
+            my_action = 0
+        else:
+            my_action = 1
+        return self.state, reshape(my_action, (1,1))
+	
+    def execute(self):
+        keys = pygame.key.get_pressed()
+        #self._player.update(self._dt, key=self._key_bindings[action])
+        start = self._player._paddle._pos['y']
+        self._player.update(self._dt, keys=keys)
+        end = self._player._paddle._pos['y']
+        self._bot.update(self._dt, self._ball.pos['y'])
+        self._ball.update(self._dt)
+        self.update()
+        dy = abs(self._player._paddle._pos['y'] - self._screen_size[1]/2.0)
+       # reward += (1 - dy) * Pong.CENTER_REWARD
+        if end-start > 0:
+            my_action = 0
+        else:
+            my_action = 1
+
+        return self.state, reshape(my_action, (1,1))
 
     class Paddle:
         def __init__(self, x, y, w, h, key_d, key_u):
