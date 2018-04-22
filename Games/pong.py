@@ -21,11 +21,11 @@ class Pong(Game):
     PADDLE_SPEED = 300 * 2
     BALL_SPEED = 200.0 * 2
     NO_REWARD = 0
-    ENEMY_SCORE_REWARD = -10
-    PONG_REWARD = 10  # given with time_reward
-    SCORE_REWARD = 1
-    CENTER_REWARD = 6
-    OUTPUT_SHAPE = (1, 5)
+    ENEMY_SCORE_REWARD = -1
+    PONG_REWARD = 1 # given with time_reward
+    SCORE_REWARD = 0
+    CENTER_REWARD = 0.6
+    OUTPUT_SHAPE = (1, 4)
 
     def __init__(self, key_bindings, max_score):
         super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI")
@@ -39,7 +39,8 @@ class Pong(Game):
         self.end = False      #to testing episodes
         self._ball = Pong.Ball(self._screen_size[0] / 2, self._screen_size[1] / 2, Pong.BALL_SPEED)
         self._player = Pong.Player((0, 255, 0),  Pong.Paddle(self._screen_size[0] - 5 - 10, self._screen_size[1] / 2 - 30, 10, 100, K_DOWN, K_UP))
-        self._bot = Pong.Bot((0, 0, 255), Pong.Paddle(5, self._screen_size[1] / 2 - 30, 10, 450, K_s, K_w))
+        self._bot = Pong.Bot((0, 0, 255), Pong.Paddle(
+            5, self._screen_size[1] / 2 - 30, 10, 450, K_s, K_w))
         self._clock = pygame.time.Clock()
 
     def update_clock(self):
@@ -51,8 +52,7 @@ class Pong(Game):
         x = self._ball.pos['x'] // (self._screen_size[0] // 4)
         y = self._ball.pos['y'] // (self._screen_size[1] // 4)
         bpos = y * 4 + x + 1
-        state = [self._player._paddle._pos['y'], self._bot._paddle._pos['y'],
-            bpos, self._ball.speed['x'], self._ball.speed['y']]
+        state = [self._bot._paddle._pos['y'], bpos, self._ball.speed['x'], self._ball.speed['y']]
         return reshape(state, Pong.OUTPUT_SHAPE)
 
     def update(self):

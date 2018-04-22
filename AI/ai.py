@@ -8,24 +8,24 @@ class AI():
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.95    # discount rate
-        self.epsilon = 1.0  # exploration rate
+        self.gamma = 0.80    # discount rate
+        self.epsilon = 0.75  # exploration rate
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
-        self.learning_rate = 0.001
         self.model = self._build_model()
 
 
 
     def _build_model(self):
         #input_shape
-        self.model = k.models.Sequential()
-        self.model.add(k.layers.Dense(24,input_dim = self.state_size, activation="relu"))
-        self.model.add(k.layers.Dense(24, activation="relu"))
-        self.model.add(k.layers.Dense(self.action_size, activation="linear"))
-        self.model.compile(loss="mean_squared_error",
-                            optimizer=k.optimizers.Adam(lr=0.1))
-        return self.model
+        model = k.models.Sequential()
+        model.add(k.layers.Dense(64,input_dim = self.state_size, activation="relu"))
+        model.add(k.layers.Dense(64, activation="relu"))
+        model.add(k.layers.Dense(64, activation="relu"))
+        model.add(k.layers.Dense(self.action_size, activation="linear"))
+        model.compile(loss="mean_squared_error",
+                      optimizer='rmsprop')
+        return model
 
     def remember(self, state, action, reward, state_new, isdone):
         self.memory.append ((state, action, reward, state_new, isdone))
@@ -34,6 +34,7 @@ class AI():
         if random.random() <= self.epsilon:
             return random.randrange(self.action_size)
         val = self.model.predict(state)
+        print(val[0])
         return nump.argmax(val[0])  
 
     def load(self, name):

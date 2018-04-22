@@ -11,9 +11,9 @@ if __name__ == "__main__":
     EPISODES = 10000
     agent=AI(Pong.OUTPUT_SHAPE[1],2)
     batch_size = 50
-    agent.load("./save.h5")
+    #agent.load("./q6h.h5")
 
-    end_learning = time() + 60*60
+    end_learning = time() + 6*60*60
 
     for e in range(EPISODES):
         pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 3)
@@ -33,5 +33,5 @@ if __name__ == "__main__":
             print(agent.epsilon)
         if pong.end==True or time() >= end_learning:
             break
-    agent.save("./save.h5")
+    #agent.save("./save.h5")
     pong.exit_game()
