@@ -8,7 +8,7 @@ from time import time
 
 #testing code
 if __name__ == "__main__":
-    EPISODES = 10000
+    EPISODES = 100000
     agent=AI(Pong.OUTPUT_SHAPE[1],2)
     batch_size = 50
     #agent.load("./q6h.h5")
@@ -25,8 +25,8 @@ if __name__ == "__main__":
             if reward == Pong.PONG_REWARD:
                 print(reward)
             pong.draw()
-            state = state_new
             agent.remember(state, act, reward, state_new, done)
+            state = state_new
             pong.update_clock()
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
