@@ -14,7 +14,7 @@ if __name__ == "__main__":
     end_learning = time() + 6*60*60
 
     for e in range(EPISODES):
-        pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 1)
+        pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 3)
         state = pong.state
         bot_state = pong.bot_state
         end = time() + 1 * 60
@@ -29,7 +29,7 @@ if __name__ == "__main__":
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
         if pong.end==True or time() >= end_learning:
-            agent.save("./save.h5")
-            pong.exit_game()
             break
+    agent.save("./save.h5")
+    pong.exit_game()
 
