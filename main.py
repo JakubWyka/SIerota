@@ -22,16 +22,13 @@ if __name__ == "__main__":
         while not pong.done and time() < end:
             act=agent.getAction(state)
             state_new, reward, done = pong.execute(act) 
-            if reward == Pong.PONG_REWARD:
-                print(reward)
             pong.draw()
             agent.remember(state, act, reward, state_new, done)
             state = state_new
             pong.update_clock()
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
-            print(agent.epsilon)
         if pong.end==True or time() >= end_learning:
             break
-    #agent.save("./save.h5")
+    agent.save("./save.h5")
     pong.exit_game()
