@@ -21,14 +21,14 @@ class Pong(Game):
     PADDLE_SPEED = 300 * 3
     BALL_SPEED = 200.0 * 3
     NO_REWARD = 0
-    ENEMY_SCORE_REWARD = -10
-    PONG_REWARD = 10  # given with time_reward
-    SCORE_REWARD = 1
-    CENTER_REWARD = 6
+    ENEMY_SCORE_REWARD = -1
+    PONG_REWARD = 1  # given with time_reward
+    SCORE_REWARD = 0
+    CENTER_REWARD = 0.6
     OUTPUT_SHAPE = (1, 4)
 
     def __init__(self, key_bindings, max_score):
-        super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI")
+        super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI - Uczenie z nauczycielem")
         self._font = pygame.font.SysFont("Times New Roman", 18)
         self._max_score = max_score
         self.start()
@@ -121,8 +121,8 @@ class Pong(Game):
         pygame.display.flip()
 	
     def execute(self, action):
+        keys = pygame.key.get_pressed()
         self._player.update(self._dt, key=self._key_bindings[action])
-
         start = self._bot._paddle._pos['y']
         self._bot.update(self._dt, self._ball.pos['y'])
         end = self._bot._paddle._pos['y']
@@ -216,9 +216,9 @@ class Pong(Game):
 
         def update(self, dt, poy):
             if self._paddle._pos['y']>poy:
-                self.SPEED = 1
+                self.SPEED = 1.3
             else:
-                self.SPEED = -1
+                self.SPEED = -1.3
             self._paddle.move(self.SPEED * Pong.PADDLE_SPEED, dt)
             self.COUNT += 1
 
@@ -236,11 +236,6 @@ class Pong(Game):
         def update(self, dt):
             self.pos['x'] += dt * self.speed['x']
             self.pos['y'] += dt * self.speed['y']
-
-        def speed_up(self):
-            factor = 1.1
-            self.speed['x'] *= factor
-            self.speed['y'] *= factor
 
         def draw(self):
             pygame.draw.circle(Pong._surface, (255, 255, 255), [rndint(self.pos['x']), rndint(self.pos['y'])],

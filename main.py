@@ -8,7 +8,7 @@ from time import time
 
 if __name__ == "__main__":
     EPISODES = 100000
-    agent=AI(Pong.OUTPUT_SHAPE[1])
+    agent=AI(Pong.OUTPUT_SHAPE[1], 2)
     batch_size = 50
     #agent.load(./s6h.h5)
     end_learning = time() + 6*60*60
