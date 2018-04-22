@@ -18,8 +18,8 @@ def clamp(x, minimum, maximum):
 
 
 class Pong(Game):
-    PADDLE_SPEED = 300 * 2
-    BALL_SPEED = 200.0 * 2
+    PADDLE_SPEED = 300 * 3
+    BALL_SPEED = 200.0 * 3
     NO_REWARD = 0
     ENEMY_SCORE_REWARD = -10
     PONG_REWARD = 10  # given with time_reward
@@ -50,9 +50,9 @@ class Pong(Game):
     def state(self):
         x = self._ball.pos['x'] // (self._screen_size[0] // 4)
         y = self._ball.pos['y'] // (self._screen_size[1] // 4)
-        bpos = y * 4 + x + 1
+        bpos = y * 4 +  (3 - x) + 1
         state = [self._player._paddle._pos['y'],
-            bpos, self._ball.speed['x'], self._ball.speed['y']]
+            bpos, -1 * self._ball.speed['x'], self._ball.speed['y']]
         return reshape(state, Pong.OUTPUT_SHAPE)
 
     @property
@@ -121,14 +121,10 @@ class Pong(Game):
         pygame.display.flip()
 	
     def execute(self, action):
-        if action < 0.5:
-            action = 0
-        else:
-            action = 1
-
         self._player.update(self._dt, key=self._key_bindings[action])
-        self._bot.update(self._dt, self._ball.pos['y'])
+
         start = self._bot._paddle._pos['y']
+        self._bot.update(self._dt, self._ball.pos['y'])
         end = self._bot._paddle._pos['y']
         self.update()
 
@@ -136,7 +132,8 @@ class Pong(Game):
             my_action = 0
         else:
             my_action = 1
-        return self.state, self.bot_state, reshape(my_action, (1,1))
+
+        return self.state, self.bot_state, my_action
 
     class Paddle:
         def __init__(self, x, y, w, h, key_d, key_u):
@@ -219,9 +216,9 @@ class Pong(Game):
 
         def update(self, dt, poy):
             if self._paddle._pos['y']>poy:
-                self.SPEED = 1.3
+                self.SPEED = 1
             else:
-                self.SPEED = -1.3
+                self.SPEED = -1
             self._paddle.move(self.SPEED * Pong.PADDLE_SPEED, dt)
             self.COUNT += 1
 

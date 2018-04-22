@@ -7,14 +7,14 @@ from pygame.locals import *
 from time import time
 
 if __name__ == "__main__":
-    EPISODES = 10000
+    EPISODES = 100000
     agent=AI(Pong.OUTPUT_SHAPE[1])
     batch_size = 50
     #agent.load(./s6h.h5)
     end_learning = time() + 6*60*60
 
     for e in range(EPISODES):
-        pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 3)
+        pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 1)
         state = pong.state
         bot_state = pong.bot_state
         end = time() + 1 * 60
