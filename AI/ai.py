@@ -4,49 +4,36 @@ import numpy as nump
 import random
 from collections import *
 class AI():
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size = 1):
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=2000)
-        self.gamma = 0.95    # discount rate
-        self.epsilon = 1.0  # exploration rate
-        self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
-        self.learning_rate = 0.001
         self.model = self._build_model()
 
-
-
     def _build_model(self):
-        #input_shape
-        self.model = k.models.Sequential()
-        self.model.add(k.layers.Dense(24,input_dim = self.state_size, activation="relu"))
-        self.model.add(k.layers.Dense(24, activation="relu"))
-        self.model.add(k.layers.Dense(self.action_size, activation="linear"))
-        self.model.compile(loss="mean_squared_error",
-                            optimizer='rmsprop')
-        return self.model
+        model = k.models.Sequential()
+        model.add(k.layers.Dense(64,input_dim = self.state_size, activation="relu"))
+        model.add(k.layers.Dense(64, activation="relu"))
+        model.add(k.layers.Dense(64, activation="relu"))
+        model.add(k.layers.Dense(self.action_size, activation="sigmoid"))
+        model.compile(loss="binary_crossentropy",
+                      optimizer='rmsprop')
+        return model
 
     def remember(self, state, my_action):
         self.memory.append((state, my_action))
 
     def getAction(self, state):
-        if random.random() <= self.epsilon:
-            return random.randrange(self.action_size)
         val = self.model.predict(state)
-        return nump.argmax(val[0])  
+        print(val[0])
+        return val[0][0] 
 
     def load(self, name):
-        #self.model.load_weights(name)
         self.model = k.models.load_model(name)
-        self.epsilon = self.epsilon_min
     def save(self, name):
-        #self.model.save_weights(name)
         self.model.save(name)
 
     def replay(self, batch_size):
         minibatch = random.sample(self.memory, batch_size)
         for state, my_action in minibatch:
             self.model.fit(state, my_action, epochs=1, verbose=0)
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay

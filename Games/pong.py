@@ -18,14 +18,14 @@ def clamp(x, minimum, maximum):
 
 
 class Pong(Game):
-    PADDLE_SPEED = 300
-    BALL_SPEED = 200.0
+    PADDLE_SPEED = 300 * 2
+    BALL_SPEED = 200.0 * 2
     NO_REWARD = 0
     ENEMY_SCORE_REWARD = -10
     PONG_REWARD = 10  # given with time_reward
     SCORE_REWARD = 1
     CENTER_REWARD = 6
-    OUTPUT_SHAPE = (1, 5)
+    OUTPUT_SHAPE = (1, 4)
 
     def __init__(self, key_bindings, max_score):
         super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI")
@@ -51,8 +51,17 @@ class Pong(Game):
         x = self._ball.pos['x'] // (self._screen_size[0] // 4)
         y = self._ball.pos['y'] // (self._screen_size[1] // 4)
         bpos = y * 4 + x + 1
-        state = [self._player._paddle._pos['y'], self._bot._paddle._pos['y'],
+        state = [self._player._paddle._pos['y'],
             bpos, self._ball.speed['x'], self._ball.speed['y']]
+        return reshape(state, Pong.OUTPUT_SHAPE)
+
+    @property
+    def bot_state(self):
+        x = self._ball.pos['x'] // (self._screen_size[0] // 4)
+        y = self._ball.pos['y'] // (self._screen_size[1] // 4)
+        bpos = y * 4 + x + 1
+        state = [self._bot._paddle._pos['y'],
+                 bpos, self._ball.speed['x'], self._ball.speed['y']]
         return reshape(state, Pong.OUTPUT_SHAPE)
 
     def update(self):
@@ -111,39 +120,23 @@ class Pong(Game):
 
         pygame.display.flip()
 	
-    def execute_ai(self, action):
-        keys = pygame.key.get_pressed()
+    def execute(self, action):
+        if action < 0.5:
+            action = 0
+        else:
+            action = 1
+
         self._player.update(self._dt, key=self._key_bindings[action])
-        start = self._player._paddle._pos['y']
-        self._player.update(self._dt, keys=keys)
-        end = self._player._paddle._pos['y']
         self._bot.update(self._dt, self._ball.pos['y'])
-        self._ball.update(self._dt)
-        reward = self.update()
-        dy = abs(self._player._paddle._pos['y'] - self._screen_size[1]/2.0)
+        start = self._bot._paddle._pos['y']
+        end = self._bot._paddle._pos['y']
+        self.update()
+
         if end - start > 0:
             my_action = 0
         else:
             my_action = 1
-        return self.state, reshape(my_action, (1,1))
-	
-    def execute(self):
-        keys = pygame.key.get_pressed()
-        #self._player.update(self._dt, key=self._key_bindings[action])
-        start = self._player._paddle._pos['y']
-        self._player.update(self._dt, keys=keys)
-        end = self._player._paddle._pos['y']
-        self._bot.update(self._dt, self._ball.pos['y'])
-        self._ball.update(self._dt)
-        self.update()
-        dy = abs(self._player._paddle._pos['y'] - self._screen_size[1]/2.0)
-       # reward += (1 - dy) * Pong.CENTER_REWARD
-        if end-start > 0:
-            my_action = 0
-        else:
-            my_action = 1
-
-        return self.state, reshape(my_action, (1,1))
+        return self.state, self.bot_state, reshape(my_action, (1,1))
 
     class Paddle:
         def __init__(self, x, y, w, h, key_d, key_u):

@@ -5,58 +5,31 @@ import pygame
 from pygame.locals import *
 
 from time import time
-#MODE =0 granie z nauczenia sie,
-#testing code
+
 if __name__ == "__main__":
-    EPISODES = 30
-    agent=AI(Pong.OUTPUT_SHAPE[1], 1)
+    EPISODES = 10000
+    agent=AI(Pong.OUTPUT_SHAPE[1])
     batch_size = 50
-    MODE = 0
-    if MODE == 0:
-        agent.load("./save.h5")
-        for e in range(EPISODES):
-            pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 5)
-            if(MODE == 0):
-                state = pong.state
-                #end = time() + 1 * 60
-                #while not pong.done and time() < end:
-                while not pong.done:
-                    act = agent.getAction(state)
-                    state, my_action = pong.execute_ai(act)
-                    #if reward == Pong.PONG_REWARD:
-                      #  print(reward)
-                    pong.draw()
-                    #state = state_new
-                 #   agent.remember(state, my_action)
-                    pong.update_clock()
-                #if len(agent.memory) > batch_size:
-                 #   agent.replay(batch_size)
-                  #  print(agent.epsilon)
-                #if pong.end==True or time() >= end_learning:
-                if pong.end == True:
-                    break
+    #agent.load(./s6h.h5)
+    end_learning = time() + 6*60*60
+
+    for e in range(EPISODES):
+        pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 3)
+        state = pong.state
+        bot_state = pong.bot_state
+        end = time() + 1 * 60
+        while not pong.done and time() < end:
+            act = agent.getAction(state)
+            state_new, bot_state_new, my_action = pong.execute(act)
+            pong.draw()
+            agent.remember(bot_state, my_action)
+            bot_state = bot_state_new
+            state = state_new
+            pong.update_clock()
+        if len(agent.memory) > batch_size:
+            agent.replay(batch_size)
+        if pong.end==True or time() >= end_learning:
+            agent.save("./save.h5")
             pong.exit_game()
-    else:
-        for e in range(EPISODES):
-            pong = Pong(key_bindings = {0 : K_DOWN, 1: K_UP}, max_score = 5)
-            state = pong.state
-            #end = time() + 1 * 60
-            #while not pong.done and time() < end:
-            while not pong.done:
-                #act = agent.getAction(state)
-                state, my_action = pong.execute()
-                #if reward == Pong.PONG_REWARD:
-                #  print(reward)
-                pong.draw()
-                #state = state_new
-                agent.remember(state, my_action)
-                pong.update_clock()
-            if len(agent.memory) > batch_size:
-                agent.replay(batch_size)
-                print(agent.epsilon)
-            #if pong.end==True or time() >= end_learning:
-            if pong.end == True:
-                agent.save("./save.h5")
-                pong.exit_game()
-                break
+            break
 
