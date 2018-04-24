@@ -1,4 +1,4 @@
 # QAIeti
 Artificial Intelligence project, Q-Learning
 
-https://1drv.ms/w/s!Am7EPttnaOnfiHaACHzST0Uvjb1m
+Sprawozdanie, wagi, sprawozdanieTODO: https://1drv.ms/f/s!Am7EPttnaOnfiH8XMaAlWIl-7Bjr
