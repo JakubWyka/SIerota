@@ -8,7 +8,7 @@ class AI():
     def __init__(self, state_size, action_size):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=21600)
+        self.memory = deque(maxlen=86400)
         self.model = self._build_model()
 
     def _build_model(self):
@@ -45,12 +45,12 @@ class AI():
             x[i] = nump.reshape(state, (self.state_size,))
             y[i] = nump.reshape(target, (self.action_size,))
             i += 1
-        history = self.model.fit(x, y, batch_size=64, shuffle=True, epochs=150, verbose=1)
+        history = self.model.fit(x, y, batch_size=64, shuffle=True, epochs=300, verbose=1)
         print(history.history.keys())
         plt.plot(history.history['loss'])
         plt.title('Uczenie z nauczycielem')
         plt.ylabel('błąd')
         plt.xlabel('iteracja')
-        plt.legend(['train'], loc='upper left')
+        #plt.legend(['train'], loc='upper left')
         plt.savefig('supervisedlearning.png')
 
