@@ -24,8 +24,8 @@ class Pong(Game):
     ENEMY_SCORE_REWARD = -1
     PONG_REWARD = 1  # given with time_reward
     SCORE_REWARD = 0
-    CENTER_REWARD = 0.6
-    OUTPUT_SHAPE = (1, 4)
+    CENTER_REWARD = 0
+    OUTPUT_SHAPE = (1, 5)
 
     def __init__(self, key_bindings, max_score):
         super(Pong, self).__init__(key_bindings, 800, 600, "Pong - SI - Uczenie z nauczycielem")
@@ -52,7 +52,7 @@ class Pong(Game):
         y = self._ball.pos['y'] // (self._screen_size[1] // 4)
         bpos = y * 4 +  (3 - x) + 1
         state = [self._player._paddle._pos['y'],
-            bpos, -1 * self._ball.speed['x'], self._ball.speed['y']]
+                 self._ball.pos['x'], self._ball.pos['y'], -1 * self._ball.speed['x'], self._ball.speed['y']]
         return reshape(state, Pong.OUTPUT_SHAPE)
 
     @property
@@ -61,7 +61,7 @@ class Pong(Game):
         y = self._ball.pos['y'] // (self._screen_size[1] // 4)
         bpos = y * 4 + x + 1
         state = [self._bot._paddle._pos['y'],
-                 bpos, self._ball.speed['x'], self._ball.speed['y']]
+                 self._ball.pos['x'], self._ball.pos['y'], self._ball.speed['x'], self._ball.speed['y']]
         return reshape(state, Pong.OUTPUT_SHAPE)
 
     def update(self):
@@ -90,7 +90,7 @@ class Pong(Game):
                 self._player.add_score()
                 restart = True
                 reward = Pong.ENEMY_SCORE_REWARD
-                reward *= (self._player._paddle._pos['y'] - self._ball.pos['y'])/self._screen_size[1]
+                #reward *= (self._player._paddle._pos['y'] - self._ball.pos['y'])/self._screen_size[1]
 
             if self._ball.pos['y'] < 0 or self._ball.pos['y'] > self._screen_size[1]:
                 self._ball.pos['y'] = clamp(self._ball.pos['y'], 0, self._screen_size[1])
@@ -126,14 +126,14 @@ class Pong(Game):
         start = self._bot._paddle._pos['y']
         self._bot.update(self._dt, self._ball.pos['y'])
         end = self._bot._paddle._pos['y']
-        self.update()
+        reward = self.update()
 
         if end - start > 0:
             my_action = 0
         else:
             my_action = 1
 
-        return self.state, self.bot_state, my_action
+        return self.state, self.bot_state, my_action, reward
 
     class Paddle:
         def __init__(self, x, y, w, h, key_d, key_u):
